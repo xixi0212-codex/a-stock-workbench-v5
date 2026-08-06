@@ -827,10 +827,11 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_GET(self):
         parsed = urlparse(self.path)
+        public_pwa_assets = {"/manifest.json", "/sw.js", "/icon-192.png", "/icon-512.png"}
         if parsed.path == "/login":
             self.send_login_page()
             return
-        if parsed.path != "/api/health" and not self.is_authorized():
+        if parsed.path != "/api/health" and parsed.path not in public_pwa_assets and not self.is_authorized():
             if parsed.path.startswith("/api/"):
                 self.send_json({"error": "请先登录"}, 401)
             else:
