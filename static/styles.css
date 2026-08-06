@@ -19,6 +19,9 @@ body { margin: 0; background: var(--bg); color: var(--ink); font-family: "Micros
 .brand-mark { width: 25px; height: 25px; display: grid; place-items: center; background: #e2b044; color: #17212b; font-family: Georgia, serif; font-weight: 800; }
 .brand small { padding-left: 2px; color: #acb5bd; font-weight: 500; }
 .clock { color: #c9d0d6; font-variant-numeric: tabular-nums; }
+.topbar-actions { display: flex; align-items: center; gap: 12px; }
+.pwa-install { width: auto; min-height: 32px; padding: 0 12px; border: 1px solid #d7a62d; border-radius: 5px; background: #d7a62d; color: #17212b; font-weight: 700; cursor: pointer; }
+.pwa-install[hidden] { display: none; }
 main { max-width: 1420px; margin: 0 auto; padding: 22px 24px 34px; }
 .view-tabs { height: 43px; display: flex; align-items: stretch; gap: 2px; margin-bottom: 14px; border-bottom: 1px solid #cfd7dd; }
 .view-tab { position: static; width: auto; height: 42px; padding: 0 18px; border: 0; border-bottom: 3px solid transparent; border-radius: 0; background: transparent; color: var(--muted); font-weight: 700; }
