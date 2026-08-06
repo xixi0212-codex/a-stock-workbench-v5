@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>A股交易工作台 V5.0</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">Z</span><span>张嘻嘻交易系统</span><small>V5.0</small></div>
+    <div id="clock" class="clock"></div>
+  </header>
+
+  <main>
+    <nav class="view-tabs" aria-label="工作台视图">
+      <button type="button" class="view-tab active" data-view="marketView">行情研判</button>
+      <button type="button" class="view-tab" data-view="holdingsView">我的持仓 <span id="holdingCount">0</span></button>
+    </nav>
+
+    <div id="marketView" class="view-pane">
+    <section class="global-band">
+      <div class="market-heading">
+        <div><small>GLOBAL RISK</small><strong class="market-section-title">外围市场环境</strong></div>
+        <span class="market-updated" id="globalUpdated"></span>
+      </div>
+      <div class="global-layout">
+        <div class="global-strip" id="globalStrip"><span>--</span></div>
+        <aside class="global-rating tone-neutral" id="globalRating">
+          <strong id="globalLevel">外围加载中</strong>
+          <span id="globalAdvice">正在同步海外主要指数</span>
+        </aside>
+      </div>
+      <p id="globalNotice" class="candidate-notice"></p>
+    </section>
+
+    <section class="market-points">
+      <div class="market-heading">
+        <div><small>MARKET</small><strong class="market-section-title">大盘情况</strong></div>
+        <span class="market-updated" id="marketUpdated"></span>
+      </div>
+      <div class="market-strip" id="marketStrip"><span>--</span></div>
+    </section>
+
+    <section class="market-rating" id="marketOverview">
+      <div class="market-verdict">
+        <span class="rating-label">市场评级</span>
+        <span class="market-dot" id="marketDot"></span>
+        <strong id="marketLevel">大盘加载中</strong>
+        <span id="marketAdvice">正在同步主要指数</span>
+        <b id="positionCap"></b>
+      </div>
+    </section>
+
+    <section class="leadership-band">
+      <div class="market-heading">
+        <div><small>SECTOR HEAT</small><strong class="market-section-title">热度板块与资金</strong></div>
+        <span class="market-updated" id="leadershipUpdated"></span>
+      </div>
+      <div class="leadership-layout">
+        <article class="heatmap-panel" id="mainlinePanel">
+          <div class="heatmap-head"><strong>热度板块（A股）</strong><span>大小=综合热度 · 颜色=涨跌</span></div>
+          <div id="heatSectorMap" class="sector-heatmap"><span>正在同步行业热度</span></div>
+          <div class="heatmap-summary"><span>主线辅助结论</span><strong id="mainlineLabel">加载中</strong><p id="mainlineSummary"></p></div>
+        </article>
+        <article class="flow-panel">
+          <div class="flow-head"><strong>主力净流入 Top10</strong><span>点击股票查看完整分析</span></div>
+          <div class="flow-table-wrap">
+            <table class="flow-table">
+              <thead><tr><th>#</th><th>股票</th><th>涨跌幅</th><th>净流入</th><th>占比</th></tr></thead>
+              <tbody id="topFlowBody"><tr><td colspan="5">加载中</td></tr></tbody>
+            </table>
+          </div>
+        </article>
+      </div>
+      <p id="leadershipNotice" class="candidate-notice"></p>
+    </section>
+
+    <section class="candidate-band">
+      <div class="candidate-heading">
+        <div><small>PREVIOUS CLOSE</small><strong>昨收观察名单</strong><span id="candidateStatus">加载中</span></div>
+        <span id="candidateUpdated"></span>
+      </div>
+      <div class="candidate-list" id="candidateList">
+        <div class="candidate-loading"><span></span><span></span><span></span></div>
+      </div>
+      <p id="candidateNotice" class="candidate-notice"></p>
+    </section>
+
+    <section class="query-band">
+      <form id="queryForm" class="query-form">
+        <label for="symbol">个股代码分析</label>
+        <div class="input-wrap">
+          <input id="symbol" name="symbol" inputmode="numeric" maxlength="6" placeholder="例如 600519" autocomplete="off" required>
+          <button type="submit" id="submitBtn">分析</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="emptyState" class="empty-state">
+      <div class="empty-chart" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+      <p>输入股票代码生成交易计划</p>
+    </section>
+
+    <section id="loadingState" class="loading-state hidden">
+      <div class="loader"></div><span>正在同步行情与日周线数据</span>
+    </section>
+
+    <section id="result" class="result hidden">
+      <div class="security-head">
+        <div>
+          <div class="security-title"><h1 id="stockName"></h1><span id="stockCode"></span></div>
+          <div class="price-line"><strong id="latestPrice"></strong><span id="priceChange"></span><small id="updateTime"></small></div>
+        </div>
+        <div id="decisionBadge" class="decision-badge"></div>
+      </div>
+
+      <div class="workspace-grid">
+        <div class="left-column">
+          <section class="panel chart-panel">
+            <div class="panel-head"><h2>日线结构</h2><span id="barStatus"></span></div>
+            <canvas id="klineChart"></canvas>
+            <div class="chart-legend"><span class="legend-up">上涨</span><span class="legend-down">下跌</span><span class="legend-kijun">基準线</span></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head"><h2>规则检查</h2><span>大盘 · 周线 · 个股</span></div>
+            <div id="checks" class="checks"></div>
+          </section>
+        </div>
+
+        <div class="right-column">
+          <section class="execution-panel" id="executionPanel">
+            <div class="execution-head"><span>30分钟执行</span><strong id="executionLabel">--</strong></div>
+            <p id="executionMessage"></p>
+            <div class="execution-values">
+              <div><span>触发价</span><b id="triggerPrice">--</b></div>
+              <div><span>实际 RR</span><b id="effectiveRR">--</b></div>
+              <div><span>风险仓位上限</span><b id="positionLimit">--</b></div>
+            </div>
+            <small id="executionRule"></small>
+          </section>
+
+          <section class="decision-panel" id="decisionPanel">
+            <p id="decisionSummary"></p>
+            <div class="trade-levels">
+              <div><span>条件买入区间</span><strong id="entryRange">--</strong><small id="entryTrigger"></small></div>
+              <div class="danger"><span>结构止损</span><strong id="stopPrice">--</strong><small id="riskPerShare"></small></div>
+              <div><span>止盈 1R</span><strong id="target1">--</strong></div>
+              <div><span>止盈 2R</span><strong id="target2">--</strong></div>
+              <div><span>止盈 3R</span><strong id="target3">--</strong></div>
+              <div><span>最高追价</span><strong id="chaseCeiling">--</strong></div>
+            </div>
+          </section>
+
+          <section class="panel metrics-panel">
+            <div class="panel-head"><h2>核心指标</h2><span id="flowTag"></span></div>
+            <div id="metrics" class="metrics"></div>
+          </section>
+
+          <section class="panel reasons-panel">
+            <div class="panel-head"><h2>未通过项</h2></div>
+            <ul id="reasons"></ul>
+          </section>
+        </div>
+      </div>
+
+      <p class="disclaimer" id="disclaimer"></p>
+    </section>
+
+    <section id="errorState" class="error-state hidden"></section>
+    </div>
+
+    <section id="holdingsView" class="view-pane hidden">
+      <div class="holdings-head">
+        <div><small>PORTFOLIO</small><h1>我的持仓</h1><p>按日线管理退出，30分钟只提供风险预警</p></div>
+        <button type="button" id="refreshHoldings" class="plain-button">刷新评估</button>
+      </div>
+      <form id="holdingForm" class="holding-form">
+        <label>股票代码<input id="holdingSymbol" inputmode="numeric" maxlength="6" placeholder="600519" required></label>
+        <label>成本价<input id="holdingCost" inputmode="decimal" type="number" min="0.001" step="0.001" placeholder="0.000" required></label>
+        <label>持仓数量<input id="holdingShares" inputmode="numeric" type="number" min="100" step="100" placeholder="100" required></label>
+        <div class="holding-form-actions">
+          <button type="button" id="cancelHoldingEdit" class="plain-button hidden">取消修改</button>
+          <button type="submit" id="holdingSubmit" class="plain-button primary">加入持仓</button>
+        </div>
+      </form>
+      <div id="portfolioSummary" class="portfolio-summary"></div>
+      <div id="holdingsList" class="holdings-list">
+        <div class="holdings-empty">暂无持仓，可手动录入或把持仓截图发给我识别。</div>
+      </div>
+      <p class="candidate-notice">持仓仅保存在当前浏览器。成本和盈亏未计入手续费、税费与滑点。</p>
+    </section>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>
