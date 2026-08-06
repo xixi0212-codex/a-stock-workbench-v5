@@ -1,0 +1,6 @@
+.git
+.edge-*
+__pycache__
+*.pyc
+*.png
+*.log
