@@ -24,7 +24,7 @@ docker run --rm -p 8765:8765 -e DASHBOARD_PASSWORD="设置你的密码" a-stock-
 3. 部署时为 `DASHBOARD_PASSWORD` 设置访问密码。
 4. 部署完成后，把 Render 提供的 HTTPS 地址分享给需要访问的人。
 
-浏览器登录框的用户名可任意填写，密码使用 `DASHBOARD_PASSWORD`。免费行情接口可能延迟或限流，盘中结果需要收盘后复核。
+手机和电脑会显示工作台自己的密码页面，密码使用 `DASHBOARD_PASSWORD`。登录状态默认保留一天。免费行情接口可能延迟或限流，盘中结果需要收盘后复核。
 
 持仓数据只保存在访问者自己的浏览器 `localStorage` 中，不随服务器或云端代码共享。外围指数只调整新开仓权限，不直接产生买卖信号。
 
