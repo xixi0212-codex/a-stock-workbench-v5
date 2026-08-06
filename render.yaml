@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: a-stock-workbench
+    runtime: docker
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      - key: DASHBOARD_PASSWORD
+        sync: false
+      - key: DASHBOARD_RATE_LIMIT
+        value: "40"
+      - key: DASHBOARD_MAX_CONCURRENT_ANALYSES
+        value: "3"
