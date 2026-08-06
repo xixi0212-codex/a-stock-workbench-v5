@@ -3,13 +3,19 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#121c25">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="A股工作台">
   <title>A股交易工作台 V5.0</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/icon-192.png">
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
   <header class="topbar">
     <div class="brand"><span class="brand-mark">Z</span><span>张嘻嘻交易系统</span><small>V5.0</small></div>
-    <div id="clock" class="clock"></div>
+    <div class="topbar-actions"><button type="button" id="pwaInstall" class="pwa-install" hidden>安装到桌面</button><div id="clock" class="clock"></div></div>
   </header>
 
   <main>
