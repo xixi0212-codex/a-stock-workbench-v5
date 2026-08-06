@@ -526,11 +526,18 @@ window.addEventListener('beforeinstallprompt', event => {
   installButton.hidden = false;
 });
 installButton.addEventListener('click', async () => {
-  if (!deferredInstallPrompt) return;
-  deferredInstallPrompt.prompt();
-  await deferredInstallPrompt.userChoice;
-  deferredInstallPrompt = null;
-  installButton.hidden = true;
+  if (deferredInstallPrompt) {
+    deferredInstallPrompt.prompt();
+    await deferredInstallPrompt.userChoice;
+    deferredInstallPrompt = null;
+    return;
+  }
+  const isiPhone = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+  if (isiPhone) {
+    alert('苹果手机请用 Safari 打开，然后点击底部“分享”按钮，再选择“添加到主屏幕”。');
+  } else {
+    alert('请用手机 Chrome 打开本页面，点击右上角 ⋮，选择“安装应用”或“添加到主屏幕”。微信内置浏览器不能直接安装。');
+  }
 });
 window.addEventListener('appinstalled', () => {
   deferredInstallPrompt = null;
