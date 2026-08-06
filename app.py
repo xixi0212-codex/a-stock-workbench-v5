@@ -6,6 +6,7 @@ import sys
 import time
 import base64
 import binascii
+import hashlib
 import hmac
 import threading
 from collections import defaultdict, deque
@@ -826,11 +827,17 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_GET(self):
         parsed = urlparse(self.path)
+        if parsed.path == "/login":
+            self.send_login_page()
+            return
         if parsed.path != "/api/health" and not self.is_authorized():
-            self.send_response(401)
-            self.send_header("WWW-Authenticate", 'Basic realm="A-stock Workbench", charset="UTF-8"')
-            self.send_header("Content-Length", "0")
-            self.end_headers()
+            if parsed.path.startswith("/api/"):
+                self.send_json({"error": "请先登录"}, 401)
+            else:
+                self.send_response(302)
+                self.send_header("Location", "/login")
+                self.send_header("Content-Length", "0")
+                self.end_headers()
             return
         if parsed.path.startswith("/api/") and parsed.path != "/api/health" and not self.within_rate_limit():
             self.send_json({"error": "请求过于频繁，请稍后再试"}, 429)
@@ -888,10 +895,70 @@ class Handler(SimpleHTTPRequestHandler):
             return
         super().do_GET()
 
+    def do_POST(self):
+        parsed = urlparse(self.path)
+        if parsed.path != "/login":
+            self.send_json({"error": "不支持的请求"}, 404)
+            return
+        try:
+            length = min(int(self.headers.get("Content-Length", "0")), 4096)
+        except ValueError:
+            length = 0
+        form = parse_qs(self.rfile.read(length).decode("utf-8", errors="replace"))
+        supplied = form.get("password", [""])[0]
+        password = os.environ.get("DASHBOARD_PASSWORD", "")
+        if password and hmac.compare_digest(supplied, password):
+            self.send_response(303)
+            self.send_header("Location", "/")
+            self.send_header(
+                "Set-Cookie",
+                "dashboard_session=%s; Path=/; Max-Age=86400; HttpOnly; Secure; SameSite=Lax" % self.session_token(password),
+            )
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+            return
+        self.send_login_page("密码不正确，请重新输入", 401)
+
+    @staticmethod
+    def session_token(password):
+        return hmac.new(password.encode("utf-8"), b"a-stock-workbench-session", hashlib.sha256).hexdigest()
+
+    def send_login_page(self, error="", status=200):
+        error_html = '<p class="error">%s</p>' % error if error else ""
+        body = ("""<!doctype html><html lang=\"zh-CN\"><head><meta charset=\"utf-8\">"
+                "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
+                "<title>登录 · A股交易工作台</title><style>"
+                "*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;"
+                "background:#070b12;color:#e8edf5;font-family:system-ui,-apple-system,sans-serif;padding:24px}"
+                ".card{width:min(420px,100%%);padding:30px;border:1px solid #263142;border-radius:18px;background:#101722}"
+                "h1{font-size:24px;margin:0 0 8px}p{color:#96a3b6;line-height:1.6}.error{color:#ff7b83}"
+                "input,button{width:100%%;height:48px;border-radius:10px;font-size:16px}"
+                "input{margin:18px 0 12px;padding:0 14px;border:1px solid #344157;background:#080d15;color:#fff}"
+                "button{border:0;background:#2d7dff;color:#fff;font-weight:700}small{display:block;margin-top:16px;color:#65738a}"
+                "</style></head><body><main class=\"card\"><h1>A股交易工作台 V5.0</h1>"
+                "<p>请输入访问密码后进入工作台。</p>%s"
+                "<form method=\"post\" action=\"/login\"><input type=\"password\" name=\"password\" "
+                "placeholder=\"访问密码\" autocomplete=\"current-password\" required autofocus>"
+                "<button type=\"submit\">进入工作台</button></form>"
+                "<small>规则化交易参考，不构成投资建议。</small></main></body></html>""") % error_html
+        encoded = body.encode("utf-8")
+        self.send_response(status)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(encoded)))
+        self.send_header("Cache-Control", "no-store")
+        self.end_headers()
+        self.wfile.write(encoded)
+
     def is_authorized(self):
         password = os.environ.get("DASHBOARD_PASSWORD", "")
         if not password:
             return True
+        cookies = self.headers.get("Cookie", "")
+        for item in cookies.split(";"):
+            key, sep, value = item.strip().partition("=")
+            if sep and key == "dashboard_session":
+                if hmac.compare_digest(value, self.session_token(password)):
+                    return True
         header = self.headers.get("Authorization", "")
         if not header.startswith("Basic "):
             return False
@@ -928,7 +995,7 @@ class Handler(SimpleHTTPRequestHandler):
         self.send_header("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
         self.send_header(
             "Content-Security-Policy",
-            "default-src 'self'; img-src 'self' data:; style-src 'self'; "
+            "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; "
             "script-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'",
         )
         super().end_headers()
